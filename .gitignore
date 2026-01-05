@@ -1,0 +1,17 @@
+# Build output
+/build
+/captures
+
+# IDE files
+.idea/
+*.iml
+.gradle/
+local.properties
+
+# Keystore files
+*.jks
+*.keystore
+
+# Generated files
+*.apk
+*.aab
