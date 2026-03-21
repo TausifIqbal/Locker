@@ -9,11 +9,14 @@ android {
 
     defaultConfig {
         applicationId = "com.applocker"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
+        ndk {
+            // This ensures the build supports both old and new ARM devices
+            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
+        }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
