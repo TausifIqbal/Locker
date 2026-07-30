@@ -1,7 +1,7 @@
 package com.applocker.utils
 
 object LockSessionManager {
-    private const val UNLOCK_COOLDOWN_MS = 15_000L
+    private const val UNLOCK_COOLDOWN_MS = 30_000L
 
     @Volatile
     var isLockScreenVisible: Boolean = false

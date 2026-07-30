@@ -30,7 +30,8 @@ class AppLockAccessibilityService : AccessibilityService() {
         if (packageName == packageNameOfAppLocker()) return
         if (packageName in launcherPackages) return
         if (!repository.isAppLocked(packageName)) {
-            LockSessionManager.clearUnlock(packageName)
+//            commenting this to allow app remains unlocked if the user switch to unlocked apps for less than 30 sec.
+//            LockSessionManager.clearUnlock(packageName)
             return
         }
         if (!LockSessionManager.shouldPrompt(packageName)) return
