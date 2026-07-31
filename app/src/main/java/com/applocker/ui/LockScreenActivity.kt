@@ -10,7 +10,7 @@ import com.applocker.databinding.ActivityLockScreenBinding
 import com.applocker.security.PinSecurityManager
 import com.applocker.utils.LockSessionManager
 import com.google.android.material.snackbar.Snackbar
-
+import android.content.Intent
 class LockScreenActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLockScreenBinding
@@ -26,11 +26,24 @@ class LockScreenActivity : AppCompatActivity() {
         repository = AppLockRepository.getInstance(this)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+        val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                moveTaskToBack(true)
+                // 1. The user tried to go back to bypass the lock.
+                // Instead, we force the phone to go to the Home Screen.
+                val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_HOME)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(homeIntent)
+
+                // 2. Mark the lock screen as closed in your manager
+                LockSessionManager.isLockScreenVisible = false
+
+                // 3. Close the lock screen activity
+                finish()
             }
-        })
+        }
+        onBackPressedDispatcher.addCallback(this, callback)
 
         binding.lockedAppTextView.text = getString(R.string.locked_app_message, targetPackage)
         binding.unlockButton.setOnClickListener {
