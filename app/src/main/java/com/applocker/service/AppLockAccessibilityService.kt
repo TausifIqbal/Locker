@@ -13,27 +13,48 @@ class AppLockAccessibilityService : AccessibilityService() {
 
     private lateinit var repository: AppLockRepository
     private lateinit var launcherPackages: Set<String>
+    
+    // IN-MEMORY CACHE for battery optimization
+    private val lockedPackagesCache = HashSet<String>()
+    private var lastCacheUpdateTime = 0L
+    private val CACHE_REFRESH_INTERVAL = 30000L // 30 seconds
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         repository = AppLockRepository.getInstance(this)
         launcherPackages = AppUtils.getLauncherPackages(this)
+        refreshCache()
+    }
+
+    private fun refreshCache() {
+        lockedPackagesCache.clear()
+        lockedPackagesCache.addAll(repository.getLockedApps())
+        lastCacheUpdateTime = System.currentTimeMillis()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // LEAN LOGIC: Filter events as early as possible
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
-
-        LockSessionManager.clearAllExpired()
 
         val packageName = event.packageName?.toString().orEmpty()
         if (packageName.isBlank()) return
-        if (packageName == packageNameOfAppLocker()) return
+
+        // Skip self and launcher (High-frequency windows)
+        if (packageName == this.packageName) return
         if (packageName in launcherPackages) return
-        if (!repository.isAppLocked(packageName)) {
-//            commenting this to allow app remains unlocked if the user switch to unlocked apps for less than 30 sec.
-//            LockSessionManager.clearUnlock(packageName)
+
+        // Throttle cache refresh to avoid frequent Disk I/O
+        if (System.currentTimeMillis() - lastCacheUpdateTime > CACHE_REFRESH_INTERVAL) {
+            refreshCache()
+        }
+
+        // LEAN CHECK: O(1) lookup in memory instead of reading from SharedPreferences
+        if (!lockedPackagesCache.contains(packageName)) {
+            LockSessionManager.clearUnlock(packageName)
             return
         }
+
+        // Efficient session handling
         if (!LockSessionManager.shouldPrompt(packageName)) return
 
         LockSessionManager.notifyPromptShown(packageName)
@@ -48,8 +69,6 @@ class AppLockAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() = Unit
-
-    private fun packageNameOfAppLocker(): String = packageName
 
     companion object {
         fun serviceId(contextPackage: String): String {
