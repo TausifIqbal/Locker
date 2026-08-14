@@ -3,6 +3,7 @@ package com.applocker.service
 import android.accessibilityservice.AccessibilityService
 import android.content.ComponentName
 import android.content.Intent
+import android.content.SharedPreferences
 import android.view.accessibility.AccessibilityEvent
 import com.applocker.data.AppLockRepository
 import com.applocker.ui.LockScreenActivity
@@ -13,23 +14,30 @@ class AppLockAccessibilityService : AccessibilityService() {
 
     private lateinit var repository: AppLockRepository
     private lateinit var launcherPackages: Set<String>
-    
+    private var lockedAppsPreferenceListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
+
     // IN-MEMORY CACHE for battery optimization
     private val lockedPackagesCache = HashSet<String>()
-    private var lastCacheUpdateTime = 0L
-    private val CACHE_REFRESH_INTERVAL = 30000L // 30 seconds
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         repository = AppLockRepository.getInstance(this)
         launcherPackages = AppUtils.getLauncherPackages(this)
         refreshCache()
+        lockedAppsPreferenceListener = repository.registerLockedAppsChangeListener {
+            refreshCache()
+        }
     }
 
+    @Synchronized
     private fun refreshCache() {
         lockedPackagesCache.clear()
         lockedPackagesCache.addAll(repository.getLockedApps())
-        lastCacheUpdateTime = System.currentTimeMillis()
+    }
+
+    @Synchronized
+    private fun isLockedPackage(packageName: String): Boolean {
+        return lockedPackagesCache.contains(packageName)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -43,13 +51,8 @@ class AppLockAccessibilityService : AccessibilityService() {
         if (packageName == this.packageName) return
         if (packageName in launcherPackages) return
 
-        // Throttle cache refresh to avoid frequent Disk I/O
-        if (System.currentTimeMillis() - lastCacheUpdateTime > CACHE_REFRESH_INTERVAL) {
-            refreshCache()
-        }
-
         // LEAN CHECK: O(1) lookup in memory instead of reading from SharedPreferences
-        if (!lockedPackagesCache.contains(packageName)) {
+        if (!isLockedPackage(packageName)) {
             LockSessionManager.clearUnlock(packageName)
             return
         }
@@ -69,6 +72,12 @@ class AppLockAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() = Unit
+
+    override fun onDestroy() {
+        lockedAppsPreferenceListener?.let(repository::unregisterLockedAppsChangeListener)
+        lockedAppsPreferenceListener = null
+        super.onDestroy()
+    }
 
     companion object {
         fun serviceId(contextPackage: String): String {

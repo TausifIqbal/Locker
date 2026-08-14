@@ -27,7 +27,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleLock(packageName: String, lock: Boolean) {
         repository.updateLockState(packageName, lock)
-        loadApps()
+        allAppsLiveData.value = allAppsLiveData.value.orEmpty().map { appInfo ->
+            if (appInfo.packageName == packageName) {
+                appInfo.copy(isLocked = lock)
+            } else {
+                appInfo
+            }
+        }
     }
 
     fun filterApps(showLocked: Boolean): List<AppInfo> {
