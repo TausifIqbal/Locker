@@ -28,9 +28,23 @@ class AppLockRepository private constructor(context: Context) {
         return true
     }
 
-    fun getLockedApps(): Set<String> = preferences.getStringSet(KEY_LOCKED_APPS, emptySet()) ?: emptySet()
+    fun getLockedApps(): Set<String> = preferences.getStringSet(KEY_LOCKED_APPS, emptySet())?.toSet() ?: emptySet()
 
     fun isAppLocked(packageName: String): Boolean = getLockedApps().contains(packageName)
+
+    fun registerLockedAppsChangeListener(listener: () -> Unit): SharedPreferences.OnSharedPreferenceChangeListener {
+        val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_LOCKED_APPS) {
+                listener()
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(preferenceListener)
+        return preferenceListener
+    }
+
+    fun unregisterLockedAppsChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        preferences.unregisterOnSharedPreferenceChangeListener(listener)
+    }
 
     fun updateLockState(packageName: String, locked: Boolean) {
         val updated = getLockedApps().toMutableSet().apply {
