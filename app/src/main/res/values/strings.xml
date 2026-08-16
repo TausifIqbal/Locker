@@ -1,3 +1,35 @@
 <resources>
-    <string name="app_name">Tapp_locker</string>
+    <string name="app_name">AppLocker Lite</string>
+    <string name="locked_apps_tab">Locked Apps</string>
+    <string name="unlocked_apps_tab">Unlocked Apps</string>
+    <string name="search_hint">Search apps</string>
+    <string name="permission_title">Required manual setup</string>
+    <string name="accessibility_disabled">Accessibility Service is disabled. Enable it to start protecting locked apps.</string>
+    <string name="accessibility_enabled">Accessibility Service is enabled. Locked apps will require your PIN.</string>
+    <string name="enable_accessibility">Enable accessibility</string>
+    <string name="manage_permission">Manage permission</string>
+    <string name="pin_change_hint">Need to rotate your secret? Tap here to change your 4-digit PIN.</string>
+    <string name="setup_pin_title">Create your security PIN</string>
+    <string name="setup_pin_subtitle">Set a 4-digit PIN on first launch. The app stores only a SHA-256 hash in SharedPreferences.</string>
+    <string name="pin_label">4-digit PIN</string>
+    <string name="confirm_pin_label">Confirm PIN</string>
+    <string name="save_pin">Save PIN</string>
+    <string name="change_pin_title">Change PIN</string>
+    <string name="current_pin_label">Current PIN</string>
+    <string name="new_pin_label">New PIN</string>
+    <string name="update_pin">Update PIN</string>
+    <string name="pin_format_error">PIN must be exactly 4 numeric digits.</string>
+    <string name="pin_mismatch_error">PIN values do not match.</string>
+    <string name="current_pin_invalid">Current PIN is incorrect.</string>
+    <string name="pin_updated_successfully">PIN updated successfully.</string>
+    <string name="app_locked_title">App locked</string>
+    <string name="locked_app_message">Enter your PIN to unlock %1$s.</string>
+    <string name="enter_pin_label">Enter PIN</string>
+    <string name="unlock">Unlock</string>
+    <string name="incorrect_pin">Incorrect PIN. Try again.</string>
+    <string name="no_apps_found">No apps match this tab and search filter.</string>
+    <string name="app_icon_content_description">Installed app icon</string>
+    <string name="lock_switch_label">Lock</string>
+    <string name="accessibility_service_label">AppLocker Lite Accessibility</string>
+    <string name="accessibility_service_description">Monitors foreground apps so AppLocker Lite can present a PIN screen for locked apps.</string>
 </resources>

@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Tapp_locker"
+rootProject.name = "AppLocker Lite"
 include(":app")
