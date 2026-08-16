@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.provider.Settings
 import com.applocker.data.AppInfo
 import com.applocker.data.AppLockRepository
+import com.applocker.security.SensitiveAppPolicy
 import java.util.Locale
 
 object AppUtils {
@@ -28,6 +29,7 @@ object AppUtils {
                 )
             }
             .filterNot { it.packageName == context.packageName }
+            .filterNot { SensitiveAppPolicy.shouldExclude(it.packageName) }
             .distinctBy { it.packageName }
             .sortedBy { it.appName.lowercase(Locale.getDefault()) }
             .toList()
