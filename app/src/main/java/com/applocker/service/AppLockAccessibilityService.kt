@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.view.accessibility.AccessibilityEvent
 import com.applocker.data.AppLockRepository
+import com.applocker.security.SensitiveAppPolicy
 import com.applocker.ui.LockScreenActivity
 import com.applocker.utils.AppUtils
 import com.applocker.utils.LockSessionManager
@@ -50,6 +51,7 @@ class AppLockAccessibilityService : AccessibilityService() {
         // Skip self and launcher (High-frequency windows)
         if (packageName == this.packageName) return
         if (packageName in launcherPackages) return
+        if (SensitiveAppPolicy.shouldExclude(packageName)) return
 
         // LEAN CHECK: O(1) lookup in memory instead of reading from SharedPreferences
         if (!isLockedPackage(packageName)) {

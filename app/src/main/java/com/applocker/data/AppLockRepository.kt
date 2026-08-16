@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.applocker.security.PinSecurityManager
+import com.applocker.security.SensitiveAppPolicy
 
 class AppLockRepository private constructor(context: Context) {
 
@@ -30,7 +31,8 @@ class AppLockRepository private constructor(context: Context) {
 
     fun getLockedApps(): Set<String> = preferences.getStringSet(KEY_LOCKED_APPS, emptySet())?.toSet() ?: emptySet()
 
-    fun isAppLocked(packageName: String): Boolean = getLockedApps().contains(packageName)
+    fun isAppLocked(packageName: String): Boolean =
+        !SensitiveAppPolicy.shouldExclude(packageName) && getLockedApps().contains(packageName)
 
     fun registerLockedAppsChangeListener(listener: () -> Unit): SharedPreferences.OnSharedPreferenceChangeListener {
         val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -47,9 +49,17 @@ class AppLockRepository private constructor(context: Context) {
     }
 
     fun updateLockState(packageName: String, locked: Boolean) {
-        val updated = getLockedApps().toMutableSet().apply {
-            if (locked) add(packageName) else remove(packageName)
+        if (SensitiveAppPolicy.shouldExclude(packageName)) {
+            preferences.edit { putStringSet(KEY_LOCKED_APPS, getLockedApps() - packageName) }
+            return
         }
+
+        val updated = getLockedApps()
+            .filterNot(SensitiveAppPolicy::shouldExclude)
+            .toMutableSet()
+            .apply {
+                if (locked) add(packageName) else remove(packageName)
+            }
         preferences.edit { putStringSet(KEY_LOCKED_APPS, updated) }
     }
 

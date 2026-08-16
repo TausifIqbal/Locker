@@ -99,6 +99,13 @@ Users must enable the Accessibility Service manually. This is required so the ap
 ### Overlay permission
 No overlay permission is required in the current implementation because the app uses a full-screen `Activity` for the lock screen instead of drawing over other apps.
 
+
+## Banking and payment app safety
+
+AppLocker Lite intentionally avoids locking banking and payment apps. This reduces the chance that financial apps such as SBI YONO (`com.sbi.lotusintouch`) or YONO Lite (`com.sbi.SBIFreedomPlus`) treat AppLocker as a risky accessibility-based app locker. The app list hides common banking/payment packages, the repository refuses to save them as locked apps, and the accessibility service skips them even if an older preference still exists.
+
+This cannot guarantee that every bank's own fraud engine will approve every sideloaded/debug build. For the lowest false-positive risk on devices such as the Samsung Galaxy S23 FE, install only a signed release build from a trusted distribution channel, avoid requesting overlay/SMS/notification-reading permissions, and do not try to lock financial apps.
+
 ## Troubleshooting
 
 ### `25.0.1` or another Java version parsing/build error
